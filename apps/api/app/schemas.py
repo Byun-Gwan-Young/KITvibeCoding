@@ -168,11 +168,11 @@ class FrontendExamItem(BaseModel):
 
 
 class FrontendExamCreate(BaseModel):
-    academy_id: int
-    subject_id: int
-    name: str
+    academy_id: int = Field(gt=0)
+    subject_id: int = Field(gt=0)
+    name: str = Field(min_length=1, max_length=120)
     exam_date: date
-    total_score: float
+    total_score: float = Field(gt=0, le=1000)
 
 
 class FrontendStudentsResponse(BaseModel):
