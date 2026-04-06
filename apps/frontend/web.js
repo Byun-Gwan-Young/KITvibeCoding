@@ -113,6 +113,29 @@ const WEAKNESS_TYPES = [
   { id: "wt6", label: "성과 변동형", color: "#6366F1", bgColor: "#E0E7FF", icon: "📈", desc: "시험마다 점수 변동이 큰 유형" },
 ];
 
+DEMO_ACCOUNTS.splice(0, DEMO_ACCOUNTS.length,
+  { email: "instructor@unitflow.ai", password: "demo1234", role: "instructor", name: "김민수 선생님" },
+  { email: "student@unitflow.ai", password: "demo1234", role: "student", name: "이서연 학생" },
+  { email: "admin@unitflow.ai", password: "demo1234", role: "admin", name: "관리자" },
+);
+
+SUBJECTS.splice(0, SUBJECTS.length,
+  { id: "s1", name: "국어", color: "#3B82F6", icon: "국" },
+  { id: "s2", name: "수학", color: "#6366F1", icon: "수" },
+  { id: "s3", name: "영어", color: "#10B981", icon: "영" },
+  { id: "s4", name: "과학탐구", color: "#F59E0B", icon: "과" },
+  { id: "s5", name: "사회탐구", color: "#EC4899", icon: "사" },
+);
+
+WEAKNESS_TYPES.splice(0, WEAKNESS_TYPES.length,
+  { id: "wt1", label: "개념 이해 부족형", color: "#EF4444", bgColor: "#FEE2E2", icon: "개", desc: "기초 개념 재정리 우선 유형" },
+  { id: "wt2", label: "계산 실수 반복형", color: "#F97316", bgColor: "#FFEDD5", icon: "계", desc: "풀이 과정에서 실수가 반복되는 유형" },
+  { id: "wt3", label: "시간 압박형", color: "#FBBF24", bgColor: "#FEF3C7", icon: "시", desc: "시간 부족으로 완료가 어려운 유형" },
+  { id: "wt4", label: "선행 개념 결손형", color: "#8B5CF6", bgColor: "#EDE9FE", icon: "선", desc: "이전 단원 이해가 부족한 유형" },
+  { id: "wt5", label: "특정 유형 편중형", color: "#EC4899", bgColor: "#FCE7F3", icon: "유", desc: "특정 문제 유형에 취약한 유형" },
+  { id: "wt6", label: "성과 변동형", color: "#6366F1", bgColor: "#E0E7FF", icon: "변", desc: "시험마다 점수 변동이 큰 유형" },
+);
+
 const STUDENTS = [
   {
     id: "st1", name: "이서연", grade: "고3", classGroup: "A반", targetUniv: "서울대학교 경영학과",
@@ -3080,7 +3103,7 @@ function StudentDetailPage({ studentId, onBack }) {
   return (
     <div>
       <button onClick={onBack} style={{ ...baseStyles.btnSecondary, marginBottom: 16, padding: "8px 14px" }}>
-        <ArrowLeft size={16} /> Back to students
+        <ArrowLeft size={16} /> 학생 목록으로
       </button>
       {loadError && (
         <div style={{ ...baseStyles.card, marginBottom: 16, background: theme.colors.warning50, color: theme.colors.warning500 }}>
@@ -5354,10 +5377,10 @@ function InstructorDashboard({ onNavigate }) {
 
   return (
     <div>
-      <DemoHelper text="Instructor dashboard with live analysis data." />
+      <DemoHelper text="강사용 대시보드와 실제 분석 데이터를 연결한 화면이다." />
       {loadError && (
         <div style={{ ...baseStyles.card, marginBottom: 16, background: theme.colors.warning50, color: theme.colors.warning500 }}>
-          Instructor dashboard request failed. Local fallback data is being shown.
+          강사용 대시보드 조회 실패. 예시 데이터 표시 상태.
         </div>
       )}
 
@@ -5377,7 +5400,7 @@ function InstructorDashboard({ onNavigate }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
         <div style={{ ...baseStyles.card }}>
-          <SectionHeader icon={AlertTriangle} title="Priority Students" subtitle="Largest target gap first" />
+          <SectionHeader icon={AlertTriangle} title="상담 우선 학생" subtitle="목표 대학 대비 격차가 큰 학생 우선" />
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {dashboard.consultPriorityStudents.map((student) => (
               <div
@@ -5386,14 +5409,14 @@ function InstructorDashboard({ onNavigate }) {
                 style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate100}`, cursor: "pointer" }}
               >
                 <div style={{ width: 40, height: 40, borderRadius: theme.radius.full, background: theme.colors.primary50, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: theme.colors.primary600 }}>
-                  {student.name?.[0] || "S"}
+                  {student.name?.[0] || "학"}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontWeight: 600, fontSize: 14 }}>{student.name}</span>
                     <PriorityBadge priority={student.consultPriority} />
                   </div>
-                  <div style={{ fontSize: 12, color: theme.colors.slate500 }}>{student.targetUniv || "No target"} · gap {student.gapScore}</div>
+                  <div style={{ fontSize: 12, color: theme.colors.slate500 }}>{student.targetUniv || "목표 대학 미설정"} · 격차 {student.gapScore}</div>
                 </div>
               </div>
             ))}
@@ -5401,7 +5424,7 @@ function InstructorDashboard({ onNavigate }) {
         </div>
 
         <div style={{ ...baseStyles.card }}>
-          <SectionHeader icon={Brain} title="Weakness Distribution" subtitle="Current diagnosis distribution" />
+          <SectionHeader icon={Brain} title="취약 유형 분포" subtitle="현재 진단 기준 학생 분포" />
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {dashboard.weaknessDistribution.map((item) => (
               <div key={item.weaknessTypeId}>
@@ -5486,14 +5509,14 @@ function StudentDetailPage({ studentId, onBack }) {
       </button>
       {loadError && (
         <div style={{ ...baseStyles.card, marginBottom: 16, background: theme.colors.warning50, color: theme.colors.warning500 }}>
-          Student detail request failed. Local fallback data is being shown.
+          학생 상세 조회 실패. 예시 데이터 표시 상태.
         </div>
       )}
 
       <div style={{ ...baseStyles.card, marginBottom: 20, padding: "24px 28px", background: `linear-gradient(135deg, ${theme.colors.white}, ${theme.colors.primary50}40)` }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 20, flexWrap: "wrap" }}>
           <div style={{ width: 64, height: 64, borderRadius: theme.radius.xl, background: `linear-gradient(135deg, ${theme.colors.primary100}, ${theme.colors.ai100})`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: theme.colors.primary700, fontSize: 24 }}>
-            {student.name?.[0] || "S"}
+            {student.name?.[0] || "학"}
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
@@ -5502,19 +5525,19 @@ function StudentDetailPage({ studentId, onBack }) {
               {(detail.diagnosis?.weaknessTypes || []).map((typeId) => <WeaknessBadge key={typeId} typeId={typeId} />)}
             </div>
             <div style={{ fontSize: 14, color: theme.colors.slate500, display: "flex", gap: 16, flexWrap: "wrap" }}>
-              <span>{student.grade} · {student.classGroup || "No class"}</span>
-              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><School size={14} /> {student.targetUniv || "No target set"}</span>
+              <span>{student.grade} · {student.classGroup || "반 미배정"}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><School size={14} /> {student.targetUniv || "목표 대학 미설정"}</span>
             </div>
           </div>
           <div style={{ display: "flex", gap: 20, alignItems: "center", padding: "16px 24px", background: theme.colors.white, borderRadius: theme.radius.xl, border: `1px solid ${theme.colors.slate200}` }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 28, fontWeight: 800, color: theme.colors.primary600 }}>{recentExams[recentExams.length - 1]?.totalScore || "-"}</div>
-              <div style={{ fontSize: 11, color: theme.colors.slate400 }}>Latest score</div>
+              <div style={{ fontSize: 11, color: theme.colors.slate400 }}>최근 점수</div>
             </div>
             <div style={{ width: 1, height: 40, background: theme.colors.slate200 }} />
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 28, fontWeight: 800, color: student.gapScore > 20 ? theme.colors.danger500 : theme.colors.accent500 }}>{student.gapScore}</div>
-              <div style={{ fontSize: 11, color: theme.colors.slate400 }}>Target gap</div>
+              <div style={{ fontSize: 11, color: theme.colors.slate400 }}>목표 격차</div>
             </div>
           </div>
         </div>
@@ -5673,10 +5696,10 @@ function StudentDashboard() {
 
   return (
     <div>
-      <DemoHelper text="Student dashboard connected to the current analysis results." />
+      <DemoHelper text="학생용 대시보드와 현재 분석 결과를 실제로 연동한 화면이다." />
       {loadError && (
         <div style={{ ...baseStyles.card, marginBottom: 16, background: theme.colors.warning50, color: theme.colors.warning500 }}>
-          Student dashboard request failed. Local fallback data is being shown.
+          학생 대시보드 조회 실패. 예시 데이터 표시 상태.
         </div>
       )}
 
@@ -5684,18 +5707,18 @@ function StudentDashboard() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div>
             <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 4px" }}>{student.name}</h2>
-            <p style={{ fontSize: 14, opacity: 0.85, margin: 0 }}>Target: <strong>{student.targetUniv || "No target set"}</strong></p>
+            <p style={{ fontSize: 14, opacity: 0.85, margin: 0 }}>목표 대학: <strong>{student.targetUniv || "미설정"}</strong></p>
           </div>
           <div style={{ padding: "16px 28px", background: "rgba(255,255,255,0.15)", borderRadius: theme.radius.xl, backdropFilter: "blur(8px)", textAlign: "center" }}>
             <div style={{ fontSize: 32, fontWeight: 800 }}>{student.recentExams?.[student.recentExams.length - 1]?.totalScore || "-"}</div>
-            <div style={{ fontSize: 12, opacity: 0.8 }}>Current score · gap {student.gapScore}</div>
+            <div style={{ fontSize: 12, opacity: 0.8 }}>현재 점수 · 격차 {student.gapScore}</div>
           </div>
         </div>
       </div>
 
       <div style={{ ...baseStyles.card, marginBottom: 20 }}>
-        <SectionHeader icon={Sparkles} title="Today Focus" subtitle="Live strategy summary from the current analysis" action={<AIBadge />} />
-        <p style={{ fontSize: 14, color: theme.colors.slate700, lineHeight: 1.7 }}>{detail.strategy?.summary || "No summary available."}</p>
+        <SectionHeader icon={Sparkles} title="오늘의 집중 포인트" subtitle="현재 분석 결과 기반 우선 전략" action={<AIBadge />} />
+        <p style={{ fontSize: 14, color: theme.colors.slate700, lineHeight: 1.7 }}>{detail.strategy?.summary || "요약 전략 없음."}</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
           {topSubjects.map((item, index) => (
             <div key={`${item.subject_code}-${index}`}>
