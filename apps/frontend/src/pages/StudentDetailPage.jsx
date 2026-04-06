@@ -38,7 +38,7 @@ export function StudentDetailPage({ studentId }) {
 
       <section className="two-grid">
         <ListCard title="진단 근거" items={(data?.diagnosis?.evidence ?? []).map((item) => String(item.reason ?? "근거 확인 필요"))} />
-        <ListCard title="학습 전략 요약" items={data?.strategy?.summary ? [data.strategy.summary] : []} />
+        <ListCard title="학습 전략 요약" items={data?.strategy?.studentSummary ? [data.strategy.studentSummary] : data?.strategy?.summary ? [data.strategy.summary] : []} />
       </section>
 
       <section className="two-grid">
@@ -47,7 +47,7 @@ export function StudentDetailPage({ studentId }) {
       </section>
 
       <section className="two-grid">
-        <ListCard title="상담 포인트" items={data?.strategy?.coachingPoints ?? []} />
+        <ListCard title="강사용 상담 포인트" items={data?.strategy?.instructorSummary ? [data.strategy.instructorSummary, ...(data?.strategy?.coachingPoints ?? [])] : data?.strategy?.coachingPoints ?? []} />
         <ListCard title="피해야 할 공부 방식" items={data?.strategy?.antiPatterns ?? []} />
       </section>
     </div>

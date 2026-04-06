@@ -30,20 +30,20 @@ WEAKNESS_TYPE_TO_FRONTEND = {
 }
 
 WEAKNESS_TYPE_LABELS = {
-    "wt1": "Concept gap",
-    "wt2": "Calculation mistakes",
-    "wt3": "Time pressure",
-    "wt4": "Prerequisite gap",
-    "wt5": "Type bias",
-    "wt6": "High variability",
+    "wt1": "개념 이해 보완",
+    "wt2": "계산 실수 주의",
+    "wt3": "시간 관리 보완",
+    "wt4": "선행 개념 보완",
+    "wt5": "문제 유형 편중",
+    "wt6": "성적 흐름 불안정",
 }
 
 FRONTEND_SUBJECT_MAP = {
-    "KOR": {"subjectId": "s1", "subjectName": "Korean"},
-    "MATH": {"subjectId": "s2", "subjectName": "Mathematics"},
-    "ENG": {"subjectId": "s3", "subjectName": "English"},
-    "SCI": {"subjectId": "s4", "subjectName": "Science Inquiry"},
-    "SOC": {"subjectId": "s5", "subjectName": "Social Inquiry"},
+    "KOR": {"subjectId": "s1", "subjectName": "국어"},
+    "MATH": {"subjectId": "s2", "subjectName": "수학"},
+    "ENG": {"subjectId": "s3", "subjectName": "영어"},
+    "SCI": {"subjectId": "s4", "subjectName": "과학탐구"},
+    "SOC": {"subjectId": "s5", "subjectName": "사회탐구"},
 }
 
 
@@ -196,7 +196,7 @@ def list_frontend_exams(db: Session) -> list[dict]:
                 "name": exam.name,
                 "date": exam.exam_date.isoformat(),
                 "status": "completed" if exam.exam_date <= date.today() else "scheduled",
-                "subject": subject.name if subject else "All subjects",
+                "subject": FRONTEND_SUBJECT_MAP.get(subject.code, {}).get("subjectName", subject.name) if subject else "전체 과목",
                 "questionCount": int(question_count),
                 "avgScore": round(float(avg_score), 2) if avg_score is not None else None,
                 "participantCount": int(participant_count),
@@ -269,10 +269,10 @@ def get_frontend_instructor_dashboard(db: Session) -> dict:
 
     return {
         "stats": [
-            {"label": "Managed students", "value": f"{len(students)}", "sub": "diagnosis coverage"},
-            {"label": "Priority consults", "value": f"{high_priority_count}", "sub": "target gap based"},
-            {"label": "Latest average", "value": f"{round(latest_avg, 1)}" if latest_avg is not None else "-", "sub": "latest exam"},
-            {"label": "Strategies", "value": f"{len(recent_strategies)}", "sub": "stored plans"},
+            {"label": "관리 학생 수", "value": f"{len(students)}", "sub": "진단 데이터가 있는 학생 기준"},
+            {"label": "우선 상담 학생", "value": f"{high_priority_count}", "sub": "목표 대학 격차 기준"},
+            {"label": "최근 시험 평균", "value": f"{round(latest_avg, 1)}" if latest_avg is not None else "-", "sub": "가장 최근 집계 시험"},
+            {"label": "저장된 전략", "value": f"{len(recent_strategies)}", "sub": "분석 완료 학생 기준"},
         ],
         "consultPriorityStudents": students[:4],
         "weaknessDistribution": weakness_distribution,
@@ -345,6 +345,11 @@ def get_frontend_student_detail(db: Session, frontend_student_id: str) -> dict |
         },
         "strategy": {
             "summary": strategy.natural_language_summary if strategy else "",
+            "studentSummary": strategy.structured_plan.get("student_summary", "") if strategy else "",
+            "instructorSummary": strategy.structured_plan.get("instructor_summary", "") if strategy else "",
+            "confidenceLevel": strategy.structured_plan.get("confidence_level", "") if strategy else "",
+            "confidenceMessage": strategy.structured_plan.get("confidence_message", "") if strategy else "",
+            "dataSufficiency": strategy.structured_plan.get("data_sufficiency", {}) if strategy else {},
             "prioritySubjects": strategy.structured_plan.get("priority_subjects", []) if strategy else [],
             "priorityUnits": strategy.structured_plan.get("priority_units", []) if strategy else [],
             "timeAllocation": strategy.structured_plan.get("time_allocation", []) if strategy else [],

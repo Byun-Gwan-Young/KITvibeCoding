@@ -41,4 +41,6 @@ def test_strategy_uses_weight_and_growth() -> None:
     assert strategy["priority_subjects"][0]["subject_code"] == "MATH"
     assert strategy["time_allocation"]
     assert strategy["rationale"]
-
+    assert strategy["student_summary"]
+    assert strategy["instructor_summary"]
+    assert strategy["confidence_level"] in {"높음", "보통", "낮음"}

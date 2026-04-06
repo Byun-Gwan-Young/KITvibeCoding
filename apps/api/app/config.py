@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 720
     openai_api_key: str | None = None
     openai_model: str = "gpt-5.4-mini"
+    cors_origins: str = "http://127.0.0.1:5173,http://localhost:5173"
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -23,4 +24,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

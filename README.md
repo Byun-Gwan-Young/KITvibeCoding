@@ -40,6 +40,7 @@ JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=720
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-5.4-mini
+CORS_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
 UNITFLOW_API_BASE_URL=http://localhost:8000
 VITE_API_BASE_URL=http://localhost:8000
 ```
@@ -75,6 +76,9 @@ npm run dev
 - 관리자: `admin@unitflow.ai` / `password123`
 - 강사: `instructor@unitflow.ai` / `password123`
 - 학생: `student@unitflow.ai` / `password123`
+
+프런트엔드 로그인 우회용 비밀번호는 제거했다.  
+이제 백엔드에 저장된 실제 계정 비밀번호만 사용한다.
 
 ## 주요 API
 
