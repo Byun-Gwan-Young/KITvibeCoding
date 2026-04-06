@@ -260,6 +260,11 @@ class FrontendStudentDiagnosisSummary(BaseModel):
 
 class FrontendStudentStrategySummary(BaseModel):
     summary: str
+    studentSummary: str = ""
+    instructorSummary: str = ""
+    confidenceLevel: str = ""
+    confidenceMessage: str = ""
+    dataSufficiency: dict[str, Any] = Field(default_factory=dict)
     prioritySubjects: list[dict[str, Any]] = Field(default_factory=list)
     priorityUnits: list[dict[str, Any]] = Field(default_factory=list)
     timeAllocation: list[dict[str, Any]] = Field(default_factory=list)

@@ -38,6 +38,21 @@ export function StudentDashboardPage() {
       </section>
 
       <section className="two-grid">
+        <ListCard
+          title="한눈에 보는 전략"
+          items={data?.strategy?.studentSummary ? [data.strategy.studentSummary] : []}
+        />
+        <ListCard
+          title="전략 신뢰도"
+          items={
+            data?.strategy?.confidenceLevel
+              ? [`신뢰도 ${data.strategy.confidenceLevel}`, data.strategy.confidenceMessage]
+              : []
+          }
+        />
+      </section>
+
+      <section className="two-grid">
         <ListCard title="왜 이런 전략이 나왔는지" items={(data?.diagnosis?.evidence ?? []).map((item) => String(item.reason ?? "근거 확인 필요"))} />
         <ListCard title="먼저 보완할 단원" items={(data?.strategy?.priorityUnits ?? []).map((item) => String(item.unit_name ?? item.unitName ?? "-"))} />
       </section>

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .config import get_settings
 from .db import Base, engine
 from .routers.analytics import router as analytics_router
 from .routers.auth import router as auth_router
@@ -11,11 +12,12 @@ from .routers.universities import router as universities_router
 
 
 Base.metadata.create_all(bind=engine)
+settings = get_settings()
 
 app = FastAPI(title="UnitFlow AI API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -48,7 +48,7 @@ def _to_frontend_session_user(user) -> FrontendSessionUser:
 def frontend_login(payload: FrontendLoginRequest, db: Session = Depends(get_db)) -> FrontendLoginResponse:
     user = authenticate_frontend_user(db, payload.email, payload.password)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid frontend credentials")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="이메일 또는 비밀번호가 맞지 않아.")
     return FrontendLoginResponse(
         accessToken=create_access_token(str(user.id)),
         user=_to_frontend_session_user(user),
@@ -76,7 +76,7 @@ def get_frontend_student(
 ) -> FrontendStudentDetailResponse:
     student = get_frontend_student_detail(db, student_id)
     if not student:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Frontend student not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="학생 정보를 찾지 못했어.")
     return FrontendStudentDetailResponse.model_validate(student)
 
 
@@ -111,7 +111,7 @@ def get_frontend_student_dashboard_route(
 ) -> FrontendStudentDetailResponse:
     student = get_frontend_student_detail_by_user(db, current_user.id)
     if not student:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Frontend student dashboard not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="학생 대시보드 정보를 찾지 못했어.")
     return FrontendStudentDetailResponse.model_validate(student)
 
 
