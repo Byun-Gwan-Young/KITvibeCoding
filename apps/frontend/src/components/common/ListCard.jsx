@@ -9,7 +9,7 @@ export function ListCard({ title, items }) {
           ))}
         </ul>
       ) : (
-        <div className="status-box empty">표시할 데이터가 아직 없어.</div>
+        <div className="status-box empty">표시할 내용이 아직 없어.</div>
       )}
     </section>
   );

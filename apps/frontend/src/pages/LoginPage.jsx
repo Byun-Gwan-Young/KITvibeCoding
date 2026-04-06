@@ -33,8 +33,11 @@ export function LoginPage() {
             <span className="pill">학습 전략</span>
             <span className="pill">목표 대학 반영</span>
           </div>
-          <h1>지금 먼저 공부할 것과 먼저 상담할 학생을 바로 확인</h1>
-          <p className="muted">학생에게는 지금 해야 할 공부를, 강사에게는 오늘 먼저 봐야 할 학생과 상담 포인트를 보여줘.</p>
+          <h1>오늘 먼저 볼 학생과 지금 해야 할 공부를 바로 확인</h1>
+          <p className="muted">
+            학생에게는 지금 해야 할 공부를, 강사에게는 오늘 먼저 봐야 할 학생과 상담 포인트를
+            보여줘.
+          </p>
         </section>
 
         <section className="panel">

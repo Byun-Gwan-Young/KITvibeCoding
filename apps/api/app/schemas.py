@@ -238,6 +238,15 @@ class StudentDetailItem(BaseModel):
     study_style_notes: str | None = None
 
 
+class UnitListItem(BaseModel):
+    id: int
+    subject_id: int
+    name: str
+    code: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class FrontendStudentExamItem(BaseModel):
     id: str
     name: str

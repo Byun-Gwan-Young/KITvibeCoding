@@ -17,20 +17,36 @@ export function InstructorDashboardPage() {
   );
 
   const priorityStudent = data?.consultPriorityStudents?.[0];
+  const latestExamPoint = data?.examTrend?.length ? data.examTrend[data.examTrend.length - 1] : null;
 
   return (
     <div className="page-grid">
       <section className="hero-card">
-        <h1>오늘 먼저 봐야 할 학생과 상담 포인트</h1>
-        <p className="muted">강사 화면은 결론부터 보여주고, 바로 학생 상세로 들어갈 수 있게 구성했어.</p>
-        {loading ? <LoadingPanel title="불러오는 중" description="학생 진단과 전략 요약을 정리하고 있어." /> : null}
-        {error ? <StatusBox tone="error" title="불러오기 실패" description={error} /> : null}
+        <h1>오늘 먼저 볼 학생과 상담 포인트</h1>
+        <p className="muted">
+          강사용 첫 화면은 결론부터 보여줘. 우선 상담 학생, 자주 보이는 취약 유형, 최근 시험 흐름을
+          한 번에 볼 수 있어.
+        </p>
+        {loading ? <LoadingPanel title="강사용 요약을 불러오는 중" description="학생 진단과 전략을 정리하고 있어." /> : null}
+        {error ? <StatusBox tone="error" title="화면을 불러오지 못했어" description={error} /> : null}
       </section>
 
       <section className="stats-grid">
-        <StatCard label="우선 상담 학생" value={priorityStudent?.name ?? "-"} description={priorityStudent ? `목표 대학 격차 ${formatScore(priorityStudent.gapScore)}` : "표시할 학생이 아직 없어"} />
-        <StatCard label="많이 보이는 취약 유형" value={data?.weaknessDistribution?.[0]?.label ?? "-"} description="최근 진단 기준 집계" />
-        <StatCard label="최근 시험 평균" value={formatScore(data?.examTrend?.[data.examTrend.length - 1]?.averageScore)} description="최근 시험 흐름 기준" />
+        <StatCard
+          label="우선 상담 학생"
+          value={priorityStudent?.name ?? "-"}
+          description={priorityStudent ? `목표 대학 격차 ${formatScore(priorityStudent.gapScore)}` : "지금 바로 볼 학생이 아직 없어."}
+        />
+        <StatCard
+          label="가장 많이 보이는 취약 유형"
+          value={data?.weaknessDistribution?.[0]?.label ?? "-"}
+          description="최근 진단 기준 집계"
+        />
+        <StatCard
+          label="최근 시험 평균"
+          value={latestExamPoint ? formatScore(latestExamPoint.averageScore) : "-"}
+          description={latestExamPoint ? `${latestExamPoint.name} 기준` : "최근 시험 데이터 없음"}
+        />
       </section>
 
       <section className="two-grid">
@@ -40,8 +56,8 @@ export function InstructorDashboardPage() {
             priorityStudent
               ? [
                   `${priorityStudent.name} 학생을 먼저 확인`,
-                  `취약 유형 ${priorityStudent.weaknessTypes.map(toWeaknessLabel).join(", ") || "데이터 없음"}`,
-                  `상담 우선도 ${priorityStudent.consultPriority}`,
+                  `취약 유형: ${priorityStudent.weaknessTypes.map(toWeaknessLabel).join(", ") || "데이터 부족"}`,
+                  `상담 우선도: ${priorityStudent.consultPriority}`,
                 ]
               : []
           }
@@ -58,7 +74,7 @@ export function InstructorDashboardPage() {
           items={(data?.weakUnits ?? []).slice(0, 5).map((unit) => `${unit.unitName} · 이해도 ${formatPercent(unit.mastery)}`)}
         />
         <section className="table-card">
-          <h2>학생 빠른 이동</h2>
+          <h2>학생 바로 열기</h2>
           <table>
             <thead>
               <tr>

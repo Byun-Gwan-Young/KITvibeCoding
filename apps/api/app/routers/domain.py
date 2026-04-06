@@ -18,6 +18,7 @@ from ..schemas import (
     StudentResultListItem,
     StudentResultRead,
     StudentResultUpsert,
+    UnitListItem,
 )
 from ..services.analytics import recalculate_student_analysis
 from ..services.domain import (
@@ -28,6 +29,7 @@ from ..services.domain import (
     list_exams,
     list_student_profiles,
     list_student_results,
+    list_units_by_subject,
     update_exam,
     update_question,
     upsert_student_result,
@@ -184,6 +186,17 @@ def list_student_results_endpoint(
         )
         for result in results
     ]
+
+
+@router.get("/subjects/{subject_id}/units", response_model=list[UnitListItem])
+def list_subject_units_endpoint(
+    subject_id: int,
+    current_user=Depends(require_roles(Role.ADMIN, Role.INSTRUCTOR)),
+    db: Session = Depends(get_db),
+) -> list[UnitListItem]:
+    _ensure_subject_exists(db, subject_id)
+    units = list_units_by_subject(db, subject_id)
+    return [UnitListItem.model_validate(unit) for unit in units]
 
 
 @router.post("/student-results", response_model=StudentResultRead)

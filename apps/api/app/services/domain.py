@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session, selectinload
 
-from ..models import Exam, Question, QuestionUnitMapping, StudentProfile, StudentResult
+from ..models import Exam, Question, QuestionUnitMapping, StudentProfile, StudentResult, Unit
 from ..schemas import ExamCreate, ExamUpdate, QuestionCreate, QuestionUpdate, StudentResultUpsert
 from .analytics import recalculate_student_analysis
 from .audit import log_audit, log_change
@@ -286,6 +286,10 @@ def list_student_results(db: Session, student_profile_id: int) -> list[StudentRe
         .order_by(StudentResult.created_at.desc(), StudentResult.id.desc())
         .all()
     )
+
+
+def list_units_by_subject(db: Session, subject_id: int) -> list[Unit]:
+    return db.query(Unit).filter(Unit.subject_id == subject_id).order_by(Unit.id.asc()).all()
 
 
 def _replace_question_unit_mappings(db: Session, question: Question, unit_mappings: list) -> None:

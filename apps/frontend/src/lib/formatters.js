@@ -1,8 +1,8 @@
 import { PRIORITY_LABELS, SUBJECT_LABELS, WEAKNESS_LABELS } from "./constants.js";
 
-export function formatScore(value) {
+export function formatScore(value, suffix = "점") {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
-  return `${Math.round(Number(value) * 10) / 10}점`;
+  return `${Math.round(Number(value) * 10) / 10}${suffix}`;
 }
 
 export function formatPercent(value) {

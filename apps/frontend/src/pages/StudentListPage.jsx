@@ -17,7 +17,11 @@ export function StudentListPage() {
     const students = data?.students ?? [];
     if (!keyword.trim()) return students;
     const lowered = keyword.trim().toLowerCase();
-    return students.filter((student) => student.name.toLowerCase().includes(lowered) || (student.targetUniv ?? "").toLowerCase().includes(lowered));
+    return students.filter(
+      (student) =>
+        student.name.toLowerCase().includes(lowered) ||
+        (student.targetUniv ?? "").toLowerCase().includes(lowered),
+    );
   }, [data, keyword]);
 
   return (
@@ -25,8 +29,8 @@ export function StudentListPage() {
       <section className="hero-card">
         <h1>학생 목록</h1>
         <p className="muted">상담이 필요한 학생을 빠르게 찾고 바로 상세 화면으로 이동할 수 있어.</p>
-        {loading ? <LoadingPanel title="불러오는 중" description="학생 목록을 정리하고 있어." /> : null}
-        {error ? <StatusBox tone="error" title="불러오기 실패" description={error} /> : null}
+        {loading ? <LoadingPanel title="학생 목록을 불러오는 중" description="학생 정보를 정리하고 있어." /> : null}
+        {error ? <StatusBox tone="error" title="학생 목록을 불러오지 못했어" description={error} /> : null}
       </section>
 
       <section className="panel">
