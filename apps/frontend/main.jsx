@@ -1,17 +1,10 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
-import App from "./web.js";
+import ReactDOM from "react-dom/client";
+import App from "./src/App.jsx";
+import "./src/styles.css";
 
-const rootElement = document.getElementById("root");
-
-if (!rootElement) {
-  throw new Error("root element missing");
-}
-
-createRoot(rootElement).render(
-  React.createElement(
-    React.StrictMode,
-    null,
-    React.createElement(App),
-  ),
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
 );
