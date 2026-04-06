@@ -3477,6 +3477,346 @@ function ExamManagementPage() {
   );
 }
 
+function WeaknessBadge({ typeId, size = "md" }) {
+  const meta = {
+    wt1: { label: "Concept Gap", color: "#EF4444", bgColor: "#FEE2E2", icon: "C" },
+    wt2: { label: "Calculation Mistakes", color: "#F97316", bgColor: "#FFEDD5", icon: "M" },
+    wt3: { label: "Time Pressure", color: "#FBBF24", bgColor: "#FEF3C7", icon: "T" },
+    wt4: { label: "Prerequisite Gap", color: "#8B5CF6", bgColor: "#EDE9FE", icon: "P" },
+    wt5: { label: "Type Bias", color: "#EC4899", bgColor: "#FCE7F3", icon: "Y" },
+    wt6: { label: "High Variability", color: "#6366F1", bgColor: "#E0E7FF", icon: "V" },
+  }[typeId];
+  if (!meta) return null;
+  const isSmall = size === "sm";
+  return (
+    <span style={{
+      ...baseStyles.badge,
+      background: meta.bgColor,
+      color: meta.color,
+      fontSize: isSmall ? 11 : 12,
+      padding: isSmall ? "2px 8px" : "4px 12px",
+      border: `1px solid ${meta.color}22`,
+    }}>
+      <span style={{ fontSize: isSmall ? 12 : 14 }}>{meta.icon}</span>
+      {meta.label}
+    </span>
+  );
+}
+
+function PriorityBadge({ priority }) {
+  const map = {
+    high: { bg: theme.colors.danger50, color: theme.colors.danger500, border: `${theme.colors.danger500}22`, text: "High Priority" },
+    medium: { bg: theme.colors.accent50, color: theme.colors.accent500, border: `${theme.colors.accent500}22`, text: "Watch" },
+    low: { bg: theme.colors.success50, color: theme.colors.success500, border: `${theme.colors.success500}22`, text: "Stable" },
+  };
+  const current = map[priority] || map.low;
+  return (
+    <span style={{ ...baseStyles.badge, background: current.bg, color: current.color, border: `1px solid ${current.border}` }}>
+      {priority === "high" && <AlertTriangle size={12} />}
+      {priority === "medium" && <Eye size={12} />}
+      {priority === "low" && <CheckCircle size={12} />}
+      {current.text}
+    </span>
+  );
+}
+
+function LoginPage({ onLogin }) {
+  const accounts = [
+    { email: "admin@unitflow.ai", password: "demo1234", role: "admin", name: "Admin Kim" },
+    { email: "instructor@unitflow.ai", password: "demo1234", role: "instructor", name: "Instructor Lee" },
+    { email: "student@unitflow.ai", password: "demo1234", role: "student", name: "Student Park" },
+  ];
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [hoveredDemo, setHoveredDemo] = useState(null);
+
+  const submitLogin = async (nextEmail, nextPassword) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await apiRequest("/frontend/login", {
+        method: "POST",
+        body: { email: nextEmail, password: nextPassword },
+      });
+      const session = { accessToken: response.accessToken, user: response.user };
+      storeSession(session);
+      onLogin(session);
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{
+      ...baseStyles.page,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: "100vh",
+      background: `linear-gradient(135deg, ${theme.colors.slate50} 0%, ${theme.colors.primary50} 50%, ${theme.colors.ai50} 100%)`,
+    }}>
+      <div style={{ position: "relative", width: "100%", maxWidth: 440, padding: "0 20px" }}>
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            <div style={{
+              width: 48,
+              height: 48,
+              borderRadius: theme.radius.xl,
+              background: `linear-gradient(135deg, ${theme.colors.primary600}, ${theme.colors.ai500})`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: `0 4px 16px ${theme.colors.primary600}40`,
+            }}>
+              <Brain size={26} color="#fff" />
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: 26, fontWeight: 800, color: theme.colors.slate900, letterSpacing: -0.5 }}>UnitFlow</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: theme.colors.primary600, letterSpacing: 2, textTransform: "uppercase" }}>AI Learning Strategy</div>
+            </div>
+          </div>
+          <p style={{ fontSize: 14, color: theme.colors.slate500, marginTop: 12 }}>
+            Explainable diagnosis and goal-aligned strategy generation
+          </p>
+        </div>
+
+        <div style={{ ...baseStyles.card, padding: "32px", boxShadow: theme.shadow.xl, borderRadius: theme.radius["2xl"] }}>
+          <form onSubmit={(e) => { e.preventDefault(); submitLogin(email, password); }}>
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: theme.colors.slate700, marginBottom: 6 }}>Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                placeholder="Enter your email"
+                style={{
+                  width: "100%",
+                  padding: "11px 14px",
+                  borderRadius: theme.radius.lg,
+                  border: `1px solid ${error ? theme.colors.danger500 : theme.colors.slate200}`,
+                  fontSize: 14,
+                  outline: "none",
+                  boxSizing: "border-box",
+                  fontFamily: fontStack,
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: theme.colors.slate700, marginBottom: 6 }}>Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                placeholder="Enter your password"
+                style={{
+                  width: "100%",
+                  padding: "11px 14px",
+                  borderRadius: theme.radius.lg,
+                  border: `1px solid ${error ? theme.colors.danger500 : theme.colors.slate200}`,
+                  fontSize: 14,
+                  outline: "none",
+                  boxSizing: "border-box",
+                  fontFamily: fontStack,
+                }}
+              />
+            </div>
+
+            {error && <div style={{ marginBottom: 16, fontSize: 13, color: theme.colors.danger500 }}>{error}</div>}
+
+            <button type="submit" style={{ ...baseStyles.btnPrimary, width: "100%", justifyContent: "center", marginBottom: 18 }} disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
+
+          <div style={{ borderTop: `1px solid ${theme.colors.slate100}`, paddingTop: 18 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: theme.colors.slate500, marginBottom: 10 }}>Quick demo accounts</div>
+            <div style={{ display: "grid", gap: 10 }}>
+              {accounts.map((account, index) => (
+                <button
+                  key={account.email}
+                  onClick={() => submitLogin(account.email, account.password)}
+                  onMouseEnter={() => setHoveredDemo(index)}
+                  onMouseLeave={() => setHoveredDemo(null)}
+                  style={{
+                    ...baseStyles.btnSecondary,
+                    width: "100%",
+                    justifyContent: "space-between",
+                    background: hoveredDemo === index ? theme.colors.slate50 : theme.colors.white,
+                  }}
+                >
+                  <span>{account.name}</span>
+                  <span style={{ fontSize: 12, color: theme.colors.slate500 }}>{account.role}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AppLayout({ user, currentPage, setCurrentPage, onLogout, children }) {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const menuItems = useMemo(() => {
+    const base = [{ id: "dashboard", label: "Dashboard", icon: Home }];
+    if (user.role === "instructor" || user.role === "admin") {
+      base.push(
+        { id: "students", label: "Students", icon: Users },
+        { id: "exams", label: "Exams", icon: FileText },
+        { id: "universities", label: "Universities", icon: School },
+      );
+    }
+    if (user.role === "student") {
+      base.push(
+        { id: "my-strategy", label: "My Strategy", icon: Target },
+        { id: "my-exams", label: "My Exams", icon: FileText },
+      );
+    }
+    return base;
+  }, [user.role]);
+
+  const roleInfo = {
+    instructor: { label: "Instructor", color: theme.colors.primary600, bg: theme.colors.primary50 },
+    student: { label: "Student", color: theme.colors.success600, bg: theme.colors.success50 },
+    admin: { label: "Admin", color: theme.colors.ai500, bg: theme.colors.ai50 },
+  }[user.role];
+
+  const sidebarWidth = sidebarCollapsed ? 72 : 256;
+
+  return (
+    <div style={{ ...baseStyles.page, display: "flex", minHeight: "100vh" }}>
+      <aside style={{
+        width: sidebarWidth,
+        background: theme.colors.white,
+        borderRight: `1px solid ${theme.colors.slate200}`,
+        display: "flex",
+        flexDirection: "column",
+        transition: "width 0.2s ease",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        bottom: 0,
+        zIndex: 40,
+        boxShadow: theme.shadow.sm,
+      }}>
+        <div style={{
+          padding: sidebarCollapsed ? "20px 12px" : "20px 20px",
+          borderBottom: `1px solid ${theme.colors.slate100}`,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          justifyContent: sidebarCollapsed ? "center" : "flex-start",
+        }}>
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: theme.radius.lg,
+            background: `linear-gradient(135deg, ${theme.colors.primary600}, ${theme.colors.ai500})`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <Brain size={20} color="#fff" />
+          </div>
+          {!sidebarCollapsed && (
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: theme.colors.slate900, lineHeight: 1.2 }}>UnitFlow</div>
+              <div style={{ fontSize: 9, fontWeight: 600, color: theme.colors.primary600, letterSpacing: 1.5, textTransform: "uppercase" }}>AI Strategy</div>
+            </div>
+          )}
+        </div>
+
+        <nav style={{ flex: 1, padding: "12px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const active = currentPage === item.id || (item.id === "students" && currentPage.startsWith("student-"));
+            return (
+              <button
+                key={item.id}
+                onClick={() => setCurrentPage(item.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: sidebarCollapsed ? "10px" : "10px 14px",
+                  borderRadius: theme.radius.lg,
+                  border: "none",
+                  background: active ? theme.colors.primary50 : "transparent",
+                  color: active ? theme.colors.primary700 : theme.colors.slate600,
+                  fontWeight: active ? 600 : 500,
+                  fontSize: 14,
+                  cursor: "pointer",
+                  width: "100%",
+                  fontFamily: fontStack,
+                  justifyContent: sidebarCollapsed ? "center" : "flex-start",
+                }}
+                title={sidebarCollapsed ? item.label : ""}
+              >
+                <Icon size={19} />
+                {!sidebarCollapsed && item.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div style={{ padding: 8, borderTop: `1px solid ${theme.colors.slate100}` }}>
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              padding: 8,
+              border: "none",
+              borderRadius: theme.radius.md,
+              background: "transparent",
+              cursor: "pointer",
+              color: theme.colors.slate400,
+            }}
+          >
+            <Menu size={16} />
+          </button>
+        </div>
+      </aside>
+
+      <main style={{ marginLeft: sidebarWidth, flex: 1, minWidth: 0, transition: "margin-left 0.2s ease" }}>
+        <header style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
+          background: "rgba(248,250,252,0.92)",
+          backdropFilter: "blur(10px)",
+          borderBottom: `1px solid ${theme.colors.slate200}`,
+          padding: "16px 24px",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: theme.colors.slate900 }}>UnitFlow Workspace</div>
+              <div style={{ fontSize: 13, color: theme.colors.slate500 }}>Explainable diagnosis and strategy workflow</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ ...baseStyles.badge, background: roleInfo.bg, color: roleInfo.color }}>{roleInfo.label}</span>
+              <span style={{ fontSize: 14, color: theme.colors.slate700 }}>{user.name || user.email}</span>
+              <button onClick={onLogout} style={baseStyles.btnSecondary}>
+                <LogOut size={16} /> Sign out
+              </button>
+            </div>
+          </div>
+        </header>
+        <div style={{ padding: "28px 32px", maxWidth: 1400, margin: "0 auto" }}>{children}</div>
+      </main>
+    </div>
+  );
+}
+
 export default function App() {
   const [session, setSession] = useState(null);
   const [currentPage, setCurrentPage] = useState("dashboard");
