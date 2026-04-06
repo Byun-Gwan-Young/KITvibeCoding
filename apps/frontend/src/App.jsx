@@ -7,7 +7,7 @@ function AppContent() {
   const { session, isHydrating } = useAuth();
 
   if (isHydrating) {
-    return <div className="screen-message">세션을 확인하고 있어.</div>;
+    return <div className="screen-message">로그인 상태를 확인하고 있어.</div>;
   }
 
   if (!session) {

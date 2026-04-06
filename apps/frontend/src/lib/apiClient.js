@@ -1,5 +1,6 @@
 const API_BASE_URL =
   (typeof window !== "undefined" && window.__UNITFLOW_API_BASE_URL__) ||
+  import.meta.env.VITE_API_BASE_URL ||
   "http://127.0.0.1:8000";
 
 async function request(path, options = {}) {
@@ -35,7 +36,17 @@ export const apiClient = {
   getStudents: (token) => request("/frontend/students", { token }),
   getStudentDetail: (token, studentId) => request(`/frontend/students/${studentId}`, { token }),
   getExams: (token) => request("/frontend/exams", { token }),
+  getExamCatalog: (token) => request("/exams", { token }),
   createExam: (token, payload) => request("/frontend/exams", { method: "POST", token, body: payload }),
   getMetadata: (token) => request("/frontend/metadata", { token }),
   getUniversities: (token) => request("/frontend/universities", { token }),
+  updateExam: (token, examId, payload) => request(`/exams/${examId}`, { method: "PUT", token, body: payload }),
+  getSubjectUnits: (token, subjectId) => request(`/subjects/${subjectId}/units`, { token }),
+  getExamQuestions: (token, examId) => request(`/exams/${examId}/questions`, { token }),
+  createQuestion: (token, payload) => request("/questions", { method: "POST", token, body: payload }),
+  updateQuestion: (token, questionId, payload) => request(`/questions/${questionId}`, { method: "PUT", token, body: payload }),
+  getStudentResults: (token, studentProfileId) => request(`/students/${studentProfileId}/results`, { token }),
+  saveStudentResult: (token, payload) => request("/student-results", { method: "POST", token, body: payload }),
+  recalculateStudent: (token, studentProfileId) =>
+    request(`/students/${studentProfileId}/recalculate`, { method: "POST", token }),
 };
