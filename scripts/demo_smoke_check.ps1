@@ -22,7 +22,7 @@ function Invoke-Step {
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $apiDir = Join-Path $repoRoot "apps\api"
-$frontendFile = Join-Path $repoRoot "apps\frontend\web.js"
+$frontendDir = Join-Path $repoRoot "apps\frontend"
 
 Invoke-Step "Backend source compile check" {
     Push-Location $apiDir
@@ -34,10 +34,10 @@ Invoke-Step "Backend source compile check" {
     }
 }
 
-Invoke-Step "Frontend source syntax check" {
-    Push-Location $repoRoot
+Invoke-Step "Frontend production build check" {
+    Push-Location $frontendDir
     try {
-        node --check $frontendFile
+        npm.cmd run build
     }
     finally {
         Pop-Location
