@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UnitFlow AI MVP</title>
+    <script>
+      window.__UNITFLOW_API_BASE_URL__ =
+        window.__UNITFLOW_API_BASE_URL__ ||
+        localStorage.getItem("unitflow-api-base-url") ||
+        "http://127.0.0.1:8000";
+    </script>
+  </head>
+  <body style="margin: 0; background: #f8fafc;">
+    <div id="root"></div>
+    <script type="module" src="/main.jsx"></script>
+  </body>
+  </html>
