@@ -11,6 +11,7 @@ from ..schemas import (
     FrontendInstructorDashboardResponse,
     FrontendLoginRequest,
     FrontendLoginResponse,
+    FrontendMetadataResponse,
     FrontendMeResponse,
     FrontendSessionUser,
     FrontendStudentDetailResponse,
@@ -22,6 +23,7 @@ from ..services.domain import create_exam
 from ..services.frontend_auth import authenticate_frontend_user
 from ..services.frontend_adapter import (
     get_frontend_instructor_dashboard,
+    get_frontend_metadata,
     get_frontend_student_detail,
     get_frontend_student_detail_by_user,
     list_frontend_exams,
@@ -84,6 +86,14 @@ def get_frontend_exams(
     db: Session = Depends(get_db),
 ) -> FrontendExamsResponse:
     return FrontendExamsResponse(exams=list_frontend_exams(db))
+
+
+@router.get("/metadata", response_model=FrontendMetadataResponse)
+def get_frontend_metadata_route(
+    current_user=Depends(require_roles(Role.ADMIN, Role.INSTRUCTOR)),
+    db: Session = Depends(get_db),
+) -> FrontendMetadataResponse:
+    return FrontendMetadataResponse.model_validate(get_frontend_metadata(db))
 
 
 @router.get("/dashboard/instructor", response_model=FrontendInstructorDashboardResponse)

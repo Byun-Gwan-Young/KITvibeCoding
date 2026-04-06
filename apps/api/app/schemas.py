@@ -183,6 +183,22 @@ class FrontendExamsResponse(BaseModel):
     exams: list[FrontendExamItem]
 
 
+class FrontendMetadataAcademyItem(BaseModel):
+    id: int
+    name: str
+
+
+class FrontendMetadataSubjectItem(BaseModel):
+    id: int
+    code: str
+    name: str
+
+
+class FrontendMetadataResponse(BaseModel):
+    academies: list[FrontendMetadataAcademyItem]
+    subjects: list[FrontendMetadataSubjectItem]
+
+
 class FrontendDashboardStat(BaseModel):
     label: str
     value: str

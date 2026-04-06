@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..engines.features import build_student_features
 from ..models import (
+    Academy,
     ClassGroup,
     Exam,
     Question,
@@ -202,6 +203,15 @@ def list_frontend_exams(db: Session) -> list[dict]:
             }
         )
     return exam_items
+
+
+def get_frontend_metadata(db: Session) -> dict:
+    academies = db.query(Academy).order_by(Academy.name.asc()).all()
+    subjects = db.query(Subject).order_by(Subject.name.asc()).all()
+    return {
+        "academies": [{"id": academy.id, "name": academy.name} for academy in academies],
+        "subjects": [{"id": subject.id, "code": subject.code, "name": subject.name} for subject in subjects],
+    }
 
 
 def get_frontend_instructor_dashboard(db: Session) -> dict:
