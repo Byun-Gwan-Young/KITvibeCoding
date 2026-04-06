@@ -3817,6 +3817,117 @@ function AppLayout({ user, currentPage, setCurrentPage, onLogout, children }) {
   );
 }
 
+function GapBar({ current, target, label, color = theme.colors.primary500 }) {
+  const safeCurrent = Number(current || 0);
+  const safeTarget = Number(target || 0);
+  const gap = safeTarget - safeCurrent;
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+        <span style={{ fontSize: 13, fontWeight: 500, color: theme.colors.slate700 }}>{label}</span>
+        <span style={{ fontSize: 12, color: theme.colors.slate500 }}>
+          {safeCurrent} to {safeTarget}
+          <span
+            style={{
+              color: gap > 10 ? theme.colors.danger500 : gap > 5 ? theme.colors.accent500 : theme.colors.success500,
+              fontWeight: 600,
+              marginLeft: 6,
+            }}
+          >
+            {gap > 0 ? `gap ${gap}` : "on track"}
+          </span>
+        </span>
+      </div>
+      <div style={{ position: "relative", height: 10, borderRadius: 5, background: theme.colors.slate100 }}>
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            height: "100%",
+            borderRadius: 5,
+            width: `${Math.min(100, Math.max(0, safeTarget))}%`,
+            background: `${color}18`,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            height: "100%",
+            borderRadius: 5,
+            width: `${Math.min(100, Math.max(0, safeCurrent))}%`,
+            background: color,
+            transition: "width 0.6s ease",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function DemoHelper({ text }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  return (
+    <div
+      style={{
+        background: theme.colors.ai50,
+        border: `1px solid ${theme.colors.ai400}33`,
+        borderRadius: theme.radius.lg,
+        padding: "12px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        marginBottom: 20,
+        fontSize: 13,
+        color: theme.colors.ai600,
+      }}
+    >
+      <HelpCircle size={16} style={{ flexShrink: 0 }} />
+      <span style={{ flex: 1 }}>{text}</span>
+      <button
+        onClick={() => setDismissed(true)}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          padding: 4,
+          color: theme.colors.ai400,
+          display: "flex",
+        }}
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
+
+function CustomTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div
+      style={{
+        background: theme.colors.slate800,
+        color: "#fff",
+        padding: "8px 12px",
+        borderRadius: theme.radius.md,
+        fontSize: 12,
+        boxShadow: theme.shadow.lg,
+      }}
+    >
+      <div style={{ fontWeight: 600, marginBottom: 4 }}>{label}</div>
+      {payload.map((item, index) => (
+        <div key={index} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 8, height: 8, borderRadius: 4, background: item.color }} />
+          <span>{item.name}: {item.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
   const [session, setSession] = useState(null);
   const [currentPage, setCurrentPage] = useState("dashboard");
