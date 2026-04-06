@@ -3342,6 +3342,8 @@ function ExamManagementPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [creating, setCreating] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [createMessage, setCreateMessage] = useState("");
   const [form, setForm] = useState({
     academy_id: 1,
     subject_id: 1,
@@ -3389,9 +3391,34 @@ function ExamManagementPage() {
     };
   }, [auth?.accessToken]);
 
+  const canCreateExam = Boolean(
+    form.name.trim() &&
+    form.exam_date &&
+    Number(form.academy_id) > 0 &&
+    Number(form.subject_id) > 0 &&
+    Number(form.total_score) > 0
+  );
+
   const handleCreateExam = async () => {
     if (!auth?.accessToken || auth.user.role === "student") return;
+    if (!form.name.trim()) {
+      setFormError("시험명을 입력해라.");
+      setCreateMessage("");
+      return;
+    }
+    if (!form.exam_date) {
+      setFormError("시험일 입력 필요.");
+      setCreateMessage("");
+      return;
+    }
+    if (Number(form.total_score) <= 0) {
+      setFormError("총점은 0보다 커야 함.");
+      setCreateMessage("");
+      return;
+    }
     setCreating(true);
+    setFormError("");
+    setCreateMessage("");
     try {
       const created = await apiRequest("/frontend/exams", {
         method: "POST",
@@ -3410,8 +3437,10 @@ function ExamManagementPage() {
         name: `Quick exam ${new Date().toISOString().slice(0, 10)}`,
       }));
       setLoadError("");
+      setCreateMessage("시험 등록 완료.");
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "Exam creation failed");
+      setFormError("시험 등록 실패. 입력값과 권한 확인 필요.");
     } finally {
       setCreating(false);
     }
@@ -3437,6 +3466,16 @@ function ExamManagementPage() {
           Exam API request failed. Fallback data is being shown.
         </div>
       )}
+      {formError && (
+        <div style={{ ...baseStyles.card, marginBottom: 16, background: theme.colors.warning50, color: theme.colors.warning500 }}>
+          {formError}
+        </div>
+      )}
+      {createMessage && (
+        <div style={{ ...baseStyles.card, marginBottom: 16, background: theme.colors.success50, color: theme.colors.success600 }}>
+          {createMessage}
+        </div>
+      )}
       {loading && (
         <div style={{ ...baseStyles.card, marginBottom: 16 }}>
           <LoadingSkeleton lines={4} />
@@ -3444,16 +3483,24 @@ function ExamManagementPage() {
       )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(140px, 1fr))", gap: 10, flex: 1, marginRight: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(120px, 1fr))", gap: 10, flex: 1, marginRight: 16 }}>
           <input
             value={form.name}
-            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+            onChange={(e) => {
+              setForm((prev) => ({ ...prev, name: e.target.value }));
+              setFormError("");
+              setCreateMessage("");
+            }}
             placeholder="Exam name"
             style={{ padding: "10px 12px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate200}`, fontFamily: fontStack }}
           />
           <select
             value={form.academy_id}
-            onChange={(e) => setForm((prev) => ({ ...prev, academy_id: Number(e.target.value) }))}
+            onChange={(e) => {
+              setForm((prev) => ({ ...prev, academy_id: Number(e.target.value) }));
+              setFormError("");
+              setCreateMessage("");
+            }}
             style={{ padding: "10px 12px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate200}`, fontFamily: fontStack }}
           >
             {(metadata.academies.length ? metadata.academies : [{ id: 1, name: "Default academy" }]).map((academy) => (
@@ -3462,7 +3509,11 @@ function ExamManagementPage() {
           </select>
           <select
             value={form.subject_id}
-            onChange={(e) => setForm((prev) => ({ ...prev, subject_id: Number(e.target.value) }))}
+            onChange={(e) => {
+              setForm((prev) => ({ ...prev, subject_id: Number(e.target.value) }));
+              setFormError("");
+              setCreateMessage("");
+            }}
             style={{ padding: "10px 12px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate200}`, fontFamily: fontStack }}
           >
             {(metadata.subjects.length ? metadata.subjects : [{ id: 1, code: "GEN", name: "General" }]).map((subject) => (
@@ -3472,11 +3523,28 @@ function ExamManagementPage() {
           <input
             type="date"
             value={form.exam_date}
-            onChange={(e) => setForm((prev) => ({ ...prev, exam_date: e.target.value }))}
+            onChange={(e) => {
+              setForm((prev) => ({ ...prev, exam_date: e.target.value }));
+              setFormError("");
+              setCreateMessage("");
+            }}
+            style={{ padding: "10px 12px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate200}`, fontFamily: fontStack }}
+          />
+          <input
+            type="number"
+            min="1"
+            max="1000"
+            value={form.total_score}
+            onChange={(e) => {
+              setForm((prev) => ({ ...prev, total_score: e.target.value }));
+              setFormError("");
+              setCreateMessage("");
+            }}
+            placeholder="Total score"
             style={{ padding: "10px 12px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate200}`, fontFamily: fontStack }}
           />
         </div>
-        <button style={baseStyles.btnPrimary} onClick={handleCreateExam} disabled={creating || auth?.user?.role === "student"}>
+        <button style={baseStyles.btnPrimary} onClick={handleCreateExam} disabled={creating || loading || auth?.user?.role === "student" || !canCreateExam}>
           <Plus size={16} /> {creating ? "Creating..." : "Create quick exam"}
         </button>
       </div>
