@@ -48,10 +48,6 @@ export function ExamManagementPage() {
 
   const exams = examsState.data?.exams ?? [];
   const examCatalog = examCatalogState.data ?? [];
-  const selectedExam = useMemo(
-    () => exams.find((exam) => String(exam.id).replace(/^e/, "") === String(selectedExamId) || String(exam.id) === String(selectedExamId)),
-    [exams, selectedExamId],
-  );
   const selectedExamRecord = useMemo(
     () => examCatalog.find((exam) => String(exam.id) === String(selectedExamId)),
     [examCatalog, selectedExamId],
@@ -61,7 +57,7 @@ export function ExamManagementPage() {
     if (!selectedExamId && exams.length > 0) {
       const firstExamId = String(exams[0].id).replace(/^e/, "");
       setSelectedExamId(firstExamId);
-      setQuestionForm(createEmptyQuestionForm(Number(firstExamId)));
+      setQuestionForm(createEmptyQuestionForm(firstExamId));
     }
   }, [exams, selectedExamId]);
 
@@ -130,7 +126,7 @@ export function ExamManagementPage() {
           : [],
       });
       setQuestionMessage("문항을 등록했어.");
-      setQuestionForm(createEmptyQuestionForm(Number(selectedExamId)));
+      setQuestionForm(createEmptyQuestionForm(selectedExamId));
       questionsState.reload();
       examsState.reload();
       examCatalogState.reload();
@@ -140,7 +136,6 @@ export function ExamManagementPage() {
   }
 
   const availableUnits = unitsState.data ?? [];
-
   const canSubmitExam = examForm.name.trim() && examForm.exam_date && Number(examForm.total_score) > 0;
   const canSubmitQuestion = selectedExamId && questionForm.number && questionForm.points && questionForm.question_type;
 
@@ -148,7 +143,7 @@ export function ExamManagementPage() {
     <div className="page-grid">
       <section className="hero-card">
         <h1>시험 관리</h1>
-        <p className="muted">시험 등록, 시험 수정, 문항 등록을 한 화면에서 이어서 처리할 수 있어.</p>
+        <p className="muted">시험 등록, 수정, 문항 등록을 한 화면에서 이어서 처리할 수 있어.</p>
         {examsState.loading || metadataState.loading || examCatalogState.loading ? (
           <LoadingPanel title="시험 정보를 불러오는 중" description="시험과 기본 설정을 정리하고 있어." />
         ) : null}
@@ -211,7 +206,7 @@ export function ExamManagementPage() {
               onChange={(event) => {
                 const nextId = event.target.value;
                 setSelectedExamId(nextId);
-                setQuestionForm(createEmptyQuestionForm(Number(nextId)));
+                setQuestionForm(createEmptyQuestionForm(nextId));
               }}
             >
               {exams.map((exam) => (
@@ -231,7 +226,7 @@ export function ExamManagementPage() {
               값 불러오기
             </button>
           </div>
-              {selectedExamRecord ? (
+          {selectedExamRecord ? (
             <>
               <div className="status-box info">
                 <strong>{selectedExamRecord.name}</strong>
@@ -263,7 +258,7 @@ export function ExamManagementPage() {
               )}
             </>
           ) : (
-            <StatusBox tone="empty" title="선택된 시험이 없어" description="먼저 시험을 등록하거나 시험을 선택해." />
+            <StatusBox tone="empty" title="선택한 시험이 없어" description="먼저 시험을 등록하거나 목록에서 시험을 선택해." />
           )}
         </section>
       </section>
