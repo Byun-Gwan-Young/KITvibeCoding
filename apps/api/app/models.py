@@ -73,6 +73,7 @@ class ClassGroup(Base):
     grade_level: Mapped[str] = mapped_column(String(30))
 
     academy: Mapped[Academy] = relationship(back_populates="class_groups")
+    students: Mapped[list["StudentProfile"]] = relationship(back_populates="class_group")
 
 
 class Subject(Base):
@@ -110,6 +111,7 @@ class StudentProfile(Base):
     study_style_notes: Mapped[str | None] = mapped_column(Text)
 
     user: Mapped[User] = relationship(back_populates="student_profile")
+    class_group: Mapped["ClassGroup | None"] = relationship(back_populates="students")
     results: Mapped[list["StudentResult"]] = relationship(back_populates="student_profile")
     diagnoses: Mapped[list["StudentDiagnosis"]] = relationship(back_populates="student_profile")
     strategies: Mapped[list["StudentStrategy"]] = relationship(back_populates="student_profile")
@@ -251,4 +253,3 @@ class ChangeHistory(Base):
     new_value: Mapped[str | None] = mapped_column(Text)
     changed_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     changed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-

@@ -123,6 +123,12 @@ class ExamRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ExamUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    exam_date: date | None = None
+    total_score: float | None = Field(default=None, gt=0, le=1000)
+
+
 class StudentListItem(BaseModel):
     student_profile_id: int
     user_id: int
@@ -134,6 +140,102 @@ class StudentListItem(BaseModel):
 
 class CurrentUserResponse(BaseModel):
     user: UserRead
+
+
+class QuestionUnitMappingPayload(BaseModel):
+    unit_id: int = Field(gt=0)
+    weight: float = Field(default=1.0, gt=0, le=1)
+
+
+class QuestionCreate(BaseModel):
+    exam_id: int = Field(gt=0)
+    number: int = Field(gt=0)
+    difficulty: int = Field(ge=1, le=5)
+    points: float = Field(gt=0, le=100)
+    question_type: str = Field(min_length=1, max_length=60)
+    estimated_seconds: int = Field(default=90, ge=10, le=7200)
+    unit_mappings: list[QuestionUnitMappingPayload] = Field(default_factory=list)
+
+
+class QuestionUpdate(BaseModel):
+    number: int | None = Field(default=None, gt=0)
+    difficulty: int | None = Field(default=None, ge=1, le=5)
+    points: float | None = Field(default=None, gt=0, le=100)
+    question_type: str | None = Field(default=None, min_length=1, max_length=60)
+    estimated_seconds: int | None = Field(default=None, ge=10, le=7200)
+    unit_mappings: list[QuestionUnitMappingPayload] | None = None
+
+
+class QuestionUnitMappingRead(BaseModel):
+    id: int
+    unit_id: int
+    weight: float
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class QuestionRead(BaseModel):
+    id: int
+    exam_id: int
+    number: int
+    difficulty: int
+    points: float
+    question_type: str
+    estimated_seconds: int
+    unit_mappings: list[QuestionUnitMappingRead] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StudentResultUpsert(BaseModel):
+    student_profile_id: int = Field(gt=0)
+    exam_id: int = Field(gt=0)
+    raw_score: float = Field(ge=0, le=1000)
+    percentile: float | None = Field(default=None, ge=0, le=100)
+    grade: int | None = Field(default=None, ge=1, le=9)
+    completed_in_seconds: int | None = Field(default=None, ge=1, le=28800)
+    question_breakdown: dict[str, Any] = Field(default_factory=dict)
+    result_metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class StudentResultRead(BaseModel):
+    id: int
+    student_profile_id: int
+    exam_id: int
+    subject_id: int
+    raw_score: float
+    percentile: float | None = None
+    grade: int | None = None
+    completed_in_seconds: int | None = None
+    question_breakdown: dict[str, Any] = Field(default_factory=dict)
+    result_metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StudentResultListItem(BaseModel):
+    id: int
+    exam_id: int
+    exam_name: str
+    subject_id: int
+    subject_name: str
+    raw_score: float
+    percentile: float | None = None
+    grade: int | None = None
+    completed_in_seconds: int | None = None
+    created_at: datetime
+
+
+class StudentDetailItem(BaseModel):
+    student_profile_id: int
+    user_id: int
+    student_name: str
+    grade_level: str
+    class_group_id: int | None = None
+    class_group_name: str | None = None
+    target_university_profile_id: int | None = None
+    study_style_notes: str | None = None
 
 
 class FrontendStudentExamItem(BaseModel):
