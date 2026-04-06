@@ -3338,33 +3338,52 @@ function StudentListPage({ onNavigate }) {
 function ExamManagementPage() {
   const auth = useAuth();
   const [exams, setExams] = useState(EXAMS);
+  const [metadata, setMetadata] = useState({ academies: [], subjects: [] });
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({
+    academy_id: 1,
+    subject_id: 1,
+    name: "",
+    exam_date: new Date().toISOString().slice(0, 10),
+    total_score: 100,
+  });
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadExams() {
+    async function loadExamsAndMetadata() {
       if (!auth?.accessToken) {
         setLoading(false);
         return;
       }
       try {
-        const response = await apiRequest("/frontend/exams", { token: auth.accessToken });
+        const [examResponse, metadataResponse] = await Promise.all([
+          apiRequest("/frontend/exams", { token: auth.accessToken }),
+          apiRequest("/frontend/metadata", { token: auth.accessToken }),
+        ]);
         if (cancelled) return;
-        setExams(response.exams || EXAMS);
+        setExams(examResponse.exams || EXAMS);
+        setMetadata(metadataResponse || { academies: [], subjects: [] });
+        setForm((prev) => ({
+          ...prev,
+          academy_id: metadataResponse?.academies?.[0]?.id || prev.academy_id,
+          subject_id: metadataResponse?.subjects?.[0]?.id || prev.subject_id,
+          name: prev.name || `Quick exam ${new Date().toISOString().slice(0, 10)}`,
+        }));
         setLoadError("");
       } catch (error) {
         if (cancelled) return;
         setExams(EXAMS);
+        setMetadata({ academies: [], subjects: [] });
         setLoadError(error instanceof Error ? error.message : "Exam list request failed");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
-    loadExams();
+    loadExamsAndMetadata();
     return () => {
       cancelled = true;
     };
@@ -3378,14 +3397,18 @@ function ExamManagementPage() {
         method: "POST",
         token: auth.accessToken,
         body: {
-          academy_id: 1,
-          subject_id: 1,
-          name: `Quick exam ${new Date().toISOString().slice(0, 10)}`,
-          exam_date: new Date().toISOString().slice(0, 10),
-          total_score: 100,
+          academy_id: Number(form.academy_id),
+          subject_id: Number(form.subject_id),
+          name: form.name || `Quick exam ${new Date().toISOString().slice(0, 10)}`,
+          exam_date: form.exam_date,
+          total_score: Number(form.total_score),
         },
       });
       setExams((prev) => [created, ...prev]);
+      setForm((prev) => ({
+        ...prev,
+        name: `Quick exam ${new Date().toISOString().slice(0, 10)}`,
+      }));
       setLoadError("");
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "Exam creation failed");
@@ -3421,7 +3444,38 @@ function ExamManagementPage() {
       )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <div />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(140px, 1fr))", gap: 10, flex: 1, marginRight: 16 }}>
+          <input
+            value={form.name}
+            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+            placeholder="Exam name"
+            style={{ padding: "10px 12px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate200}`, fontFamily: fontStack }}
+          />
+          <select
+            value={form.academy_id}
+            onChange={(e) => setForm((prev) => ({ ...prev, academy_id: Number(e.target.value) }))}
+            style={{ padding: "10px 12px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate200}`, fontFamily: fontStack }}
+          >
+            {(metadata.academies.length ? metadata.academies : [{ id: 1, name: "Default academy" }]).map((academy) => (
+              <option key={academy.id} value={academy.id}>{academy.name}</option>
+            ))}
+          </select>
+          <select
+            value={form.subject_id}
+            onChange={(e) => setForm((prev) => ({ ...prev, subject_id: Number(e.target.value) }))}
+            style={{ padding: "10px 12px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate200}`, fontFamily: fontStack }}
+          >
+            {(metadata.subjects.length ? metadata.subjects : [{ id: 1, code: "GEN", name: "General" }]).map((subject) => (
+              <option key={subject.id} value={subject.id}>{subject.name}</option>
+            ))}
+          </select>
+          <input
+            type="date"
+            value={form.exam_date}
+            onChange={(e) => setForm((prev) => ({ ...prev, exam_date: e.target.value }))}
+            style={{ padding: "10px 12px", borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.slate200}`, fontFamily: fontStack }}
+          />
+        </div>
         <button style={baseStyles.btnPrimary} onClick={handleCreateExam} disabled={creating || auth?.user?.role === "student"}>
           <Plus size={16} /> {creating ? "Creating..." : "Create quick exam"}
         </button>
