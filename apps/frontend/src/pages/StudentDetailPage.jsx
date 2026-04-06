@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useAppState } from "../contexts/AppStateContext.jsx";
 import { apiClient } from "../lib/apiClient.js";
@@ -19,19 +19,52 @@ export function StudentDetailPage({ studentId }) {
     grade: "",
     completed_in_seconds: "",
   });
+  const [questionResults, setQuestionResults] = useState({});
   const [resultMessage, setResultMessage] = useState("");
   const [recalculateMessage, setRecalculateMessage] = useState("");
 
   const detailState = useAsyncData(() => apiClient.getStudentDetail(session.accessToken, studentId), [session.accessToken, studentId]);
-  const resultsState = useAsyncData(() => apiClient.getStudentResults(session.accessToken, Number(String(studentId).replace(/^st/, ""))), [session.accessToken, studentId]);
+  const resultsState = useAsyncData(
+    () => apiClient.getStudentResults(session.accessToken, Number(String(studentId).replace(/^st/, ""))),
+    [session.accessToken, studentId],
+  );
   const examsState = useAsyncData(() => apiClient.getExams(session.accessToken), [session.accessToken]);
+  const questionState = useAsyncData(
+    () => (resultForm.exam_id ? apiClient.getExamQuestions(session.accessToken, Number(resultForm.exam_id)) : Promise.resolve([])),
+    [session.accessToken, resultForm.exam_id],
+  );
 
   const numericStudentId = Number(String(studentId).replace(/^st/, ""));
+
+  useEffect(() => {
+    const questions = questionState.data ?? [];
+    if (!questions.length) {
+      setQuestionResults({});
+      return;
+    }
+    setQuestionResults((previous) =>
+      Object.fromEntries(
+        questions.map((question) => [
+          question.id,
+          previous[question.id] ?? { is_correct: false, points: question.points, estimated_seconds: question.estimated_seconds },
+        ]),
+      ),
+    );
+  }, [questionState.data]);
 
   const latestExamLabel = useMemo(() => {
     const recent = detailState.data?.student?.recentExams ?? [];
     return recent.length ? recent[recent.length - 1].name : "-";
   }, [detailState.data]);
+
+  const calculatedRawScore = useMemo(() => {
+    const questions = questionState.data ?? [];
+    if (!questions.length) return Number(resultForm.raw_score || 0);
+    return questions.reduce(
+      (total, question) => total + (questionResults[question.id]?.is_correct ? Number(question.points) : 0),
+      0,
+    );
+  }, [questionResults, questionState.data, resultForm.raw_score]);
 
   async function handleSaveResult(event) {
     event.preventDefault();
@@ -40,15 +73,21 @@ export function StudentDetailPage({ studentId }) {
       await apiClient.saveStudentResult(session.accessToken, {
         student_profile_id: numericStudentId,
         exam_id: Number(resultForm.exam_id),
-        raw_score: Number(resultForm.raw_score),
+        raw_score: calculatedRawScore,
         percentile: resultForm.percentile ? Number(resultForm.percentile) : null,
         grade: resultForm.grade ? Number(resultForm.grade) : null,
         completed_in_seconds: resultForm.completed_in_seconds ? Number(resultForm.completed_in_seconds) : null,
-        question_breakdown: {},
-        result_metadata: { source: "frontend_manual" },
+        question_breakdown: Object.fromEntries(
+          Object.entries(questionResults).map(([questionId, payload]) => [String(questionId), payload]),
+        ),
+        result_metadata: {
+          source: "frontend_manual",
+          question_count: questionState.data?.length ?? 0,
+        },
       });
-      setResultMessage("학생 결과를 저장했어. 최신 전략도 함께 다시 계산했어.");
+      setResultMessage("학생 결과를 저장했고, 최신 전략도 함께 다시 계산했어.");
       setResultForm({ exam_id: "", raw_score: "", percentile: "", grade: "", completed_in_seconds: "" });
+      setQuestionResults({});
       resultsState.reload();
       detailState.reload();
     } catch (submitError) {
@@ -67,7 +106,7 @@ export function StudentDetailPage({ studentId }) {
     }
   }
 
-  const resultSubmitEnabled = resultForm.exam_id && resultForm.raw_score !== "";
+  const resultSubmitEnabled = resultForm.exam_id && (questionState.data?.length ? true : resultForm.raw_score !== "");
 
   return (
     <div className="page-grid">
@@ -99,7 +138,7 @@ export function StudentDetailPage({ studentId }) {
         <StatCard
           label="최근 확인한 시험"
           value={latestExamLabel}
-          description="상세 화면에 연결된 최근 시험"
+          description="상세 화면과 연결된 최근 시험"
         />
       </section>
 
@@ -145,7 +184,7 @@ export function StudentDetailPage({ studentId }) {
             <h2 style={{ margin: 0 }}>학생 결과 입력</h2>
             <button className="ghost-button" type="button" onClick={handleRecalculate}>전략 다시 계산</button>
           </div>
-          <p className="muted">시험 결과를 입력하면 진단과 학습 전략이 바로 다시 계산돼.</p>
+          <p className="muted">시험을 고르고 문항별 정오답을 체크하면 점수가 자동으로 계산돼.</p>
           <form className="form-stack" onSubmit={handleSaveResult}>
             <div className="form-grid">
               <label className="field">
@@ -160,8 +199,8 @@ export function StudentDetailPage({ studentId }) {
                 </select>
               </label>
               <label className="field">
-                <span>원점수</span>
-                <input type="number" value={resultForm.raw_score} onChange={(event) => setResultForm((prev) => ({ ...prev, raw_score: event.target.value }))} />
+                <span>자동 계산 점수</span>
+                <input type="number" value={calculatedRawScore} readOnly />
               </label>
               <label className="field">
                 <span>백분위</span>
@@ -176,6 +215,67 @@ export function StudentDetailPage({ studentId }) {
                 <input type="number" value={resultForm.completed_in_seconds} onChange={(event) => setResultForm((prev) => ({ ...prev, completed_in_seconds: event.target.value }))} />
               </label>
             </div>
+
+            {questionState.loading ? <LoadingPanel title="문항 정보를 불러오는 중" description="시험별 문항을 정리하고 있어." /> : null}
+            {questionState.error ? <StatusBox tone="error" title="문항 정보를 불러오지 못했어" description={questionState.error} /> : null}
+
+            {questionState.data?.length ? (
+              <div className="question-grid">
+                {questionState.data.map((question) => {
+                  const current = questionResults[question.id] ?? { is_correct: false };
+                  return (
+                    <div className="question-card" key={question.id}>
+                      <div className="question-card-header">
+                        <strong>{question.number}번 문항</strong>
+                        <span className="muted">{question.question_type}</span>
+                      </div>
+                      <div className="question-card-meta">
+                        <span>배점 {formatScore(question.points)}</span>
+                        <span>난이도 {question.difficulty}</span>
+                        <span>예상 시간 {question.estimated_seconds}초</span>
+                      </div>
+                      <div className="toolbar">
+                        <button
+                          className={`nav-button ${current.is_correct ? "active" : ""}`}
+                          type="button"
+                          onClick={() =>
+                            setQuestionResults((previous) => ({
+                              ...previous,
+                              [question.id]: {
+                                is_correct: true,
+                                points: question.points,
+                                estimated_seconds: question.estimated_seconds,
+                              },
+                            }))
+                          }
+                        >
+                          정답
+                        </button>
+                        <button
+                          className={`nav-button ${current.is_correct === false ? "active" : ""}`}
+                          type="button"
+                          onClick={() =>
+                            setQuestionResults((previous) => ({
+                              ...previous,
+                              [question.id]: {
+                                is_correct: false,
+                                points: question.points,
+                                estimated_seconds: question.estimated_seconds,
+                              },
+                            }))
+                          }
+                        >
+                          오답
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : resultForm.exam_id ? (
+              <StatusBox tone="empty" title="문항이 아직 없어" description="이 시험에는 아직 등록된 문항이 없어. 시험 관리에서 먼저 문항을 등록해." />
+            ) : null}
+
             <button className="primary-button" type="submit" disabled={!resultSubmitEnabled}>학생 결과 저장</button>
           </form>
           {resultMessage ? <StatusBox tone={resultMessage.includes("실패") ? "error" : "info"} title="결과 입력 상태" description={resultMessage} /> : null}

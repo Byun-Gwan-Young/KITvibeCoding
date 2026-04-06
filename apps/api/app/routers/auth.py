@@ -14,6 +14,5 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     user = authenticate_user(db, payload.email, payload.password)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="이메일 또는 비밀번호가 맞지 않아.")
     return TokenResponse(access_token=create_access_token(str(user.id)), user=UserRead.model_validate(user))
-

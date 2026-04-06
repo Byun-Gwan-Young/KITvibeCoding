@@ -38,18 +38,19 @@ export const apiClient = {
   getExams: (token) => request("/frontend/exams", { token }),
   getExamCatalog: (token) => request("/exams", { token }),
   createExam: (token, payload) => request("/frontend/exams", { method: "POST", token, body: payload }),
-  getMetadata: (token) => request("/frontend/metadata", { token }),
-  getUniversities: (token) => request("/universities/policies", { token }),
-  createUniversityPolicy: (token, payload) => request("/universities/policies", { method: "POST", token, body: payload }),
-  updateUniversityPolicy: (token, policyId, payload) =>
-    request(`/universities/policies/${policyId}`, { method: "PUT", token, body: payload }),
   updateExam: (token, examId, payload) => request(`/exams/${examId}`, { method: "PUT", token, body: payload }),
-  getSubjectUnits: (token, subjectId) => request(`/subjects/${subjectId}/units`, { token }),
   getExamQuestions: (token, examId) => request(`/exams/${examId}/questions`, { token }),
   createQuestion: (token, payload) => request("/questions", { method: "POST", token, body: payload }),
   updateQuestion: (token, questionId, payload) => request(`/questions/${questionId}`, { method: "PUT", token, body: payload }),
+  getMetadata: (token) => request("/frontend/metadata", { token }),
+  getSubjectUnits: (token, subjectId) => request(`/subjects/${subjectId}/units`, { token }),
   getStudentResults: (token, studentProfileId) => request(`/students/${studentProfileId}/results`, { token }),
   saveStudentResult: (token, payload) => request("/student-results", { method: "POST", token, body: payload }),
   recalculateStudent: (token, studentProfileId) =>
     request(`/students/${studentProfileId}/recalculate`, { method: "POST", token }),
+  getUniversities: (token) => request("/universities/policies", { token }),
+  createUniversityPolicy: (token, payload) =>
+    request("/universities/policies", { method: "POST", token, body: payload }),
+  updateUniversityPolicy: (token, policyId, payload) =>
+    request(`/universities/policies/${policyId}`, { method: "PUT", token, body: payload }),
 };
