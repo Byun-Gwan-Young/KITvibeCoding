@@ -27,24 +27,5 @@ export const ROLE_LABELS = {
   student: "학생",
 };
 
-export const MENU_BY_ROLE = {
-  admin: [
-    { key: "instructor-dashboard", label: "강사용 요약" },
-    { key: "students", label: "학생 목록" },
-    { key: "exams", label: "시험 관리" },
-    { key: "universities", label: "목표 대학 정책" },
-  ],
-  instructor: [
-    { key: "instructor-dashboard", label: "강사용 요약" },
-    { key: "students", label: "학생 목록" },
-    { key: "exams", label: "시험 관리" },
-    { key: "universities", label: "목표 대학 정책" },
-  ],
-  student: [{ key: "student-dashboard", label: "나의 학습 전략" }],
-};
-
-export const TEST_ACCOUNTS = [
-  { role: "강사", email: "instructor@unitflow.ai", password: "password123" },
-  { role: "학생", email: "student@unitflow.ai", password: "password123" },
-  { role: "관리자", email: "admin@unitflow.ai", password: "password123" },
-];
+// MENU_BY_ROLE → src/router/permissions.js로 이전
+// TEST_ACCOUNTS → src/pages/LoginPage.jsx 내부 정의로 이전

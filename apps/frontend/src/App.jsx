@@ -1,58 +1,48 @@
-import { useEffect, useRef } from "react";
-import { AppShell } from "./components/layout/AppShell.jsx";
+// apps/frontend/src/App.jsx
+import { useEffect } from "react";
+import { HashRouterProvider, useRouter } from "./router/hashRouter.js";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import { LoginPage } from "./pages/LoginPage.jsx";
 import { MainRouter } from "./router/MainRouter.jsx";
-
-function defaultPathForRole(role) {
-  return role === "student" ? "/student" : "/dashboard";
-}
+import { DEFAULT_ROUTES } from "./router/permissions.js";
 
 function AppContent() {
   const { session, isHydrating } = useAuth();
-  const hadSessionRef = useRef(false);
+  const { pathname, replace } = useRouter();
 
+  // 로그인 후 역할에 맞는 기본 경로로 이동
   useEffect(() => {
-    if (isHydrating) return;
-
-    if (!session) {
-      hadSessionRef.current = false;
-      if (window.location.pathname !== "/login") {
-        window.history.replaceState({}, "", "/login");
-      }
-      return;
+    if (!session) return;
+    const role = session.user.role;
+    if (pathname === "/" || pathname === "/login") {
+      replace(DEFAULT_ROUTES[role] || "/");
     }
-
-    const targetPath = defaultPathForRole(session.user.role);
-    if (!hadSessionRef.current) {
-      if (window.location.pathname === "/login" || window.location.pathname === "/") {
-        window.history.pushState({}, "", targetPath);
-      }
-    } else if (window.location.pathname === "/login" || window.location.pathname === "/") {
-      window.history.replaceState({}, "", targetPath);
-    }
-    hadSessionRef.current = true;
-  }, [session, isHydrating]);
+  }, [session, pathname, replace]);
 
   if (isHydrating) {
-    return <div className="screen-message">로그인 상태를 확인하고 있어.</div>;
+    return (
+      <div className="screen-message">
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 32, marginBottom: 12, animation: "fadeIn 0.5s ease" }}>⏳</div>
+          <p className="muted">로그인 상태를 확인하고 있습니다...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
     return <LoginPage />;
   }
 
-  return (
-    <AppShell>
-      <MainRouter />
-    </AppShell>
-  );
+  return <MainRouter />;
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <HashRouterProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </HashRouterProvider>
   );
 }
