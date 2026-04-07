@@ -1,6 +1,7 @@
+// apps/frontend/src/pages/StudentListPage.jsx
 import { useMemo, useState } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
-import { useAppState } from "../contexts/AppStateContext.jsx";
+import { useRouter } from "../router/hashRouter.js";
 import { apiClient } from "../lib/apiClient.js";
 import { formatScore, toPriorityLabel, toWeaknessLabel } from "../lib/formatters.js";
 import { useAsyncData } from "../hooks/useAsyncData.js";
@@ -9,9 +10,12 @@ import { StatusBox } from "../components/common/StatusBox.jsx";
 
 export function StudentListPage() {
   const { session } = useAuth();
-  const { openStudentDetail } = useAppState();
+  const { pathname, navigate } = useRouter();
   const [keyword, setKeyword] = useState("");
   const { data, error, loading } = useAsyncData(() => apiClient.getStudents(session.accessToken), [session.accessToken]);
+
+  // 역할에 따라 학생 상세 경로 결정
+  const basePath = pathname.startsWith("/admin") ? "/admin/students" : "/teacher/students";
 
   const filteredStudents = useMemo(() => {
     const students = data?.students ?? [];
@@ -27,15 +31,20 @@ export function StudentListPage() {
   return (
     <div className="page-grid">
       <section className="hero-card">
-        <h1>학생 목록</h1>
-        <p className="muted">상담이 필요한 학생을 빠르게 찾고 바로 상세 화면으로 이동할 수 있어.</p>
-        {loading ? <LoadingPanel title="학생 목록을 불러오는 중" description="학생 정보를 정리하고 있어." /> : null}
-        {error ? <StatusBox tone="error" title="학생 목록을 불러오지 못했어" description={error} /> : null}
+        <h1>학생 관리</h1>
+        <p className="muted">상담이 필요한 학생을 찾고, 바로 상세 화면으로 이동할 수 있어요.</p>
+        {loading ? <LoadingPanel title="학생 목록을 불러오는 중" description="학생 정보를 정리하고 있어요." /> : null}
+        {error ? <StatusBox tone="error" title="학생 목록을 불러오지 못했어요" description={error} /> : null}
       </section>
 
       <section className="panel">
         <div className="toolbar">
-          <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="학생 이름 또는 목표 대학 검색" />
+          <input
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+            placeholder="학생 이름 또는 목표 대학으로 검색"
+            style={{ flex: 1 }}
+          />
         </div>
       </section>
 
@@ -53,17 +62,28 @@ export function StudentListPage() {
           </thead>
           <tbody>
             {filteredStudents.map((student) => (
-              <tr key={student.id} onClick={() => openStudentDetail(student.id)} style={{ cursor: "pointer" }}>
-                <td>{student.name}</td>
+              <tr key={student.id} onClick={() => navigate(`${basePath}/${student.id}`)} style={{ cursor: "pointer" }}>
+                <td><strong>{student.name}</strong></td>
                 <td>{student.classGroup ?? "-"}</td>
                 <td>{student.targetUniv ?? "-"}</td>
-                <td>{toPriorityLabel(student.consultPriority)}</td>
+                <td>
+                  <span className="pill" style={{
+                    background: student.consultPriority === "high" ? "rgba(220,38,38,0.08)" : student.consultPriority === "medium" ? "rgba(245,158,11,0.08)" : "rgba(16,185,129,0.08)",
+                    color: student.consultPriority === "high" ? "var(--danger)" : student.consultPriority === "medium" ? "var(--warning)" : "var(--success)",
+                    border: `1px solid ${student.consultPriority === "high" ? "rgba(220,38,38,0.18)" : student.consultPriority === "medium" ? "rgba(245,158,11,0.18)" : "rgba(16,185,129,0.18)"}`,
+                  }}>
+                    {toPriorityLabel(student.consultPriority)}
+                  </span>
+                </td>
                 <td>{student.weaknessTypes.map(toWeaknessLabel).join(", ") || "-"}</td>
-                <td>{formatScore(student.gapScore)}</td>
+                <td><strong>{formatScore(student.gapScore)}</strong></td>
               </tr>
             ))}
           </tbody>
         </table>
+        {!loading && filteredStudents.length === 0 && (
+          <StatusBox tone="empty" title="표시할 학생이 없어요" description="검색 조건을 바꿔 보거나 학생을 먼저 등록해 주세요." />
+        )}
       </section>
     </div>
   );
